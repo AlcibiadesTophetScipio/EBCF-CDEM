@@ -1,0 +1,4 @@
+type: models.rdn.make_rdn
+no_upsampling: true
+input_dim: 1
+name: rdn

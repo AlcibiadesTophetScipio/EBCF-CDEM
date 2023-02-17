@@ -1,0 +1,31 @@
+# @package _global_
+
+defaults:
+  - override /models@model_spec: mapif
+
+exp_name: exp_mapif-enhance
+# exp_name: astgtmv003_mapif-enhance-local
+
+model_spec:
+  type: models.nif.MAPIF_ENHANCE
+  make_coord_local: true
+  encoder:
+    input_dim: 2
+
+run_spec:
+  runner:
+    type: runner.train.v1
+
+monitor_spec:
+  psnr: max
+
+dataset_spec:
+  train_dataset:
+    dataset:
+      transM: dem2multi
+  val_dataset:
+    dataset:
+      transM: dem2multi
+  test_dataset:
+    dataset:
+      transM: dem2multi

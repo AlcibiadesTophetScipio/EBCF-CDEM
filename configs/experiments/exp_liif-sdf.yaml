@@ -1,0 +1,15 @@
+# @package _global_
+
+# defaults:
+#   - override /datasets@dataset_spec: astgtmv003
+
+exp_name: liif-sdf
+device: "cuda:0"
+
+run_spec:
+  runner:
+    type: runner.train.v1
+
+# change the model structure
+model_spec:
+  loss_method: compos

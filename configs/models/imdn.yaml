@@ -1,0 +1,3 @@
+type: models.imdn.IMDN_IO
+name: imdn
+in_nc: 1

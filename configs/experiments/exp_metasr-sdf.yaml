@@ -1,0 +1,20 @@
+# @package _global_
+
+defaults:
+  - override /models@model_spec: metasr
+  - override /datasets@dataset_spec: astgtmv003
+
+# exp_name: exp_metasr-sdf
+exp_name: astgtmv003_metasr-sdf-compos
+device: "cuda:1"
+
+run_spec:
+  runner:
+    type: runner.train.v1
+
+# change the model structure
+model_spec:
+  loss_method: compos
+#   encoder:
+    # type: models.edsr.make_edsr
+    # input_dim: 3

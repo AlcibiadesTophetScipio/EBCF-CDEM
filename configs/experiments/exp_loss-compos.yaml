@@ -1,0 +1,22 @@
+# @package _global_
+
+defaults:
+  - override /datasets@dataset_spec: astgtmv003
+
+# exp_name: liif-sdf-compos
+exp_name: astgtmv003_liif-sdf-compos
+device: "cuda:0"
+
+run_spec:
+  runner:
+    # type: runner.test.v1
+
+    type: runner.train.v1
+    # writer_flag: false
+
+# change the model structure
+model_spec:
+  loss_method: compos
+#   encoder:
+    # type: models.edsr.make_edsr
+    # input_dim: 3

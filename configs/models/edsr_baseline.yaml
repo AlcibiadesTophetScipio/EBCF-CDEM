@@ -1,0 +1,14 @@
+type: models.edsr.make_edsr_baseline
+no_upsampling: true
+input_dim: 1
+name: edsrB
+
+# type: models.edsr.EDSR
+# args:
+#   n_resblocks: 32
+#   n_feats: 256
+#   res_scale: 0.1
+#   scale: [0.1]
+#   no_upsampling: False
+#   rgb_range: 1.0
+#   n_colors: 3

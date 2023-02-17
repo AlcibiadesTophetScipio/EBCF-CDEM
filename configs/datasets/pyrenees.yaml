@@ -1,0 +1,46 @@
+name: pyrenees
+cache: none # in_memory
+# root_path: ${oc.env:HOME}/Programs/Datasets/Terrains/Pyrenees_2m_split/r256/
+# split_file: ${oc.env:HOME}/Programs/Datasets/Terrains/Pyrenees_2m_split/r256/Terrains_2m.json
+root_path: /data/syao/Datasets/Terrains/Pyrenees_2m_split/r256/ 
+split_file: /data/syao/Datasets/Terrains/Pyrenees_2m_split/r256/Terrains_2m.json
+
+train_dataset:
+  type: datasets.wrappers.SDFImplicitDownsampled
+  inp_size: 48
+  scale_max: 4
+  sample_q: 2304
+  dataset:
+    type: datasets.dem_folder.DEMFolder
+    root_path: ${dataset_spec.root_path}
+    split_file: ${dataset_spec.split_file}
+    split_key: train
+    transM: dem2one
+    repeat: 1
+    # repeat: 256**2/48**2=20
+    cache: ${dataset_spec.cache}
+
+val_dataset:
+  type: datasets.wrappers.SDFImplicitDownsampled
+  inp_size: 48
+  scale_max: 4
+  sample_q: 2304
+  dataset:
+    type: datasets.dem_folder.DEMFolder
+    root_path: ${dataset_spec.root_path}
+    split_file: ${dataset_spec.split_file}
+    split_key: valid
+    transM: dem2one
+    # first_k: 100
+    repeat: 1
+    cache: ${dataset_spec.cache}
+
+test_dataset:
+  type: datasets.wrappers.SDFImplicitDownsampled
+  scale_min: 4
+  dataset:
+    type: datasets.dem_folder.DEMFolder
+    root_path: ${dataset_spec.root_path}
+    split_file: ${dataset_spec.split_file}
+    split_key: test
+    transM: dem2one

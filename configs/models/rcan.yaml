@@ -1,0 +1,4 @@
+type: models.rcan.make_rcan
+no_upsampling: true
+input_dim: 1
+name: rcan

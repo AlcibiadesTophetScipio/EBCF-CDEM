@@ -1,0 +1,36 @@
+
+ply_dir: /data/syao/Exps/Solvent-ply
+npy_dir: /data/syao/Exps/Solvent-npy
+vedo_dir: /data/syao/Exps/vedo-show
+
+# train_dataset: astgtmv003
+train_dataset: pyrenees
+
+test_dataset: astgtmv003
+# test_dataset: pyrenees
+# test_dataset: tyrol
+
+# scale: 2
+# scale: 4
+# scale: 8
+scale: 16
+
+rec_dirs:
+  gt_dir: multi-exp_interpolator-gt/${test_dataset}-identity-x1/
+
+  bilinear_dir: multi-exp_interpolator/${test_dataset}-bilinear-x${scale}/
+  bicubic_dir: multi-exp_interpolator/${test_dataset}-bicubic-x${scale}/
+
+  mapif-global_dir: multi-${train_dataset}_mapif-global/${test_dataset}-x${scale}/
+  mapif_dir: multi-${train_dataset}_mapif-local/${test_dataset}-x${scale}/
+  mapif-sdf_dir: multi-${train_dataset}_mapif-sdf_loss-compos/${test_dataset}-x${scale}/
+  
+  metasr_dir: dem-pro-recs/${train_dataset}To${test_dataset}-edsr-metasr_base-x${scale}/
+  metasr-sdf_dir: multi-${train_dataset}_metasr-sdf_loss-compos/${test_dataset}-x${scale}/
+  
+  liif-naive_dir: dem-pro-recs/${train_dataset}To${test_dataset}-edsr-liif_naive-x${scale}/
+  liif_dir: dem-pro-recs/${train_dataset}To${test_dataset}-edsr-liif_base-x${scale}/
+  liif-sdf_dir: multi-${train_dataset}_liif-sdf_loss-compos/${test_dataset}-x${scale}/
+  
+  sdfif-nearest_dir: multi-${train_dataset}_sdfif-nearest/${test_dataset}-x${scale}/
+  sdfif-bicubic_dir: multi-${train_dataset}_sdfif-bicubic/${test_dataset}-x${scale}/

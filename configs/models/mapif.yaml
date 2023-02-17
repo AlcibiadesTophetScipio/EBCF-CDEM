@@ -1,0 +1,11 @@
+type: models.nif.MAPIF
+
+mapif:
+  spec: # need this to stop utils.object parse
+    type: models.mlp.MLP
+    out_dim: 1
+    hidden_list: [256, 256, 256, 256]
+
+
+defaults:
+  - edsr_baseline@encoder

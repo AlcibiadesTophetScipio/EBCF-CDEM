@@ -1,0 +1,74 @@
+# @package _global_
+
+# defaults:
+#   - override /datasets@dataset_spec: astgtmv003
+  # - override /datasets@dataset_spec: tyrol
+
+exp_name: exp_test
+device: "cuda:0"
+
+run_spec:
+  runner:
+    type: runner.test.v1
+
+
+test_spec:
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_mapif/runner.train.v1/epoch-984_loss-0.0119.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_mapif/runner.train.v1/epoch-575_psnr-40.2821.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_mapif-local/runner.train.v1/epoch-880_loss-0.0118.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_mapif-local/runner.train.v1/epoch-736_psnr-39.9833.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_mapif-sdf_loss-compos/runner.train.v1/epoch-915_psnr_enhance-40.1155.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_metasr-sdf-compos/runner.train.v1/epoch-812_psnr_enhance-39.9991.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_liif-sdf-compos/runner.train.v1/epoch-710_compos_loss-0.0118.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_sdfif/runner.train.v1/epoch-818_psnr-40.1705.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_sdfif/runner.train.v1/epoch-last.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_sdfif-bicubic/runner.train.v1/epoch-485_psnr-40.4172.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/astgtmv003_sdfif-bicubic/runner.train.v1/epoch-last.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/exp_sdfif/runner.train.v1/epoch-610_loss-0.0117.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/exp_sdfif/runner.train.v1/epoch-last.pth
+
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_mapif/runner.train.v1/epoch-996_psnr-58.1650.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_mapif-local/runner.train.v1/epoch-764_psnr-59.1910.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_mapif-local/runner.train.v1/epoch-864_loss-0.0013.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_mapif-enhance/runner.train.v1/epoch-840_loss-0.0013.pth
+
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_mapif-sdf_loss-all/runner.train.v1/epoch-996_loss-0.0029.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_mapif-sdf_loss-focus/runner.train.v1/epoch-911_psnr_pred-58.3011.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_mapif-sdf-local_loss-all/runner.train.v1/epoch-933_psnr_enhance-59.0498.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_mapif-sdf-local_loss-compos/runner.train.v1/epoch-893_psnr_enhance-58.8380.pth
+
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/metasr-sdf-compos/runner.train.v1/epoch-613_psnr_enhance-58.9805.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/metasr-sdf-compos/runner.train.v1/epoch-891_compos_loss-0.0012.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/liif-sdf-idpt/runner.train.v1/epoch-948_psnr_enhance-58.7531.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/liif-sdf-compos/runner.train.v1/epoch-977_psnr_enhance-59.1153.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/liif-sdf-all/runner.train.v1/epoch-972_psnr_enhance-58.8964.pth
+
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/liif-sdf-new/runner.train.v1/epoch-780_psnr_enhance-58.7467.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/liif-sdf-new/runner.train.v1/epoch-999_loss-0.0025.pth
+
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_sdfif/runner.train.v1/epoch-929_psnr-59.0466.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_sdfif-300/runner.train.v1/epoch-227_psnr-58.9686.pth
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/pyreness_sdfif-bicubic/runner.train.v1/epoch-847_psnr-59.3613.pth
+  
+  model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/exp_debug/runner.train.v1/epoch-5_psnr_pred-47.9786.pth
+
+  # visual_dir: visual_recs
+  eval_bsize:
+
+# dataset_spec:
+#   test_dataset:
+#     scale_min: 8
+
+# dataset_spec:
+#   train_dataset:
+#     dataset:
+#       transM: dem2multi
+#   val_dataset:
+#     dataset:
+#       transM: dem2multi
+#   test_dataset:
+#     dataset:
+#       transM: dem2multi
+
+hydra:
+  output_subdir: null

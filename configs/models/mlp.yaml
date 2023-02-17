@@ -1,0 +1,4 @@
+type: models.mlp.MLP
+in_dim: 1
+out_dim: 2
+hidden_list: [32,32,32]

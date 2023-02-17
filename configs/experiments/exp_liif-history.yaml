@@ -1,0 +1,20 @@
+# @package _global_
+
+# defaults:
+  # - override datasets@dataset_spec: astgtmv003
+
+exp_name: history
+
+run_spec:
+  runner:
+    type: runner.test.v1
+
+test_spec:
+  # checkpoints
+  # model_pth: ${oc.env:HOME}/Programs/Experiments/Solvent/naive/epoch-765_psnr_enhance-59.2159.pth
+  
+  history checkpoints
+  model_from: config
+  model_pth: /home/wq/Programs/Experiments/dem-pro/terrains/edsr-liif-sdf_args/epoch-best.pth
+
+  # visual_dir: visual_recs

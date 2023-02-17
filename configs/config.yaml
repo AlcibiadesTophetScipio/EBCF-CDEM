@@ -1,0 +1,84 @@
+
+####################### Env setting
+exp_name: temp
+run_dir: ${oc.env:HOME}/Programs/Experiments/Solvent
+device: "cuda:0"
+# ensure_path: true
+
+####################### Run procedure setting
+run_spec:
+  runner:
+    type: "???"
+
+    ########## train 
+    # type: runner.train.v1
+    # writer_flag: true # for enable tensorboard records
+
+    ########## test
+    # type: runner.test.v1
+
+  return_type: func
+
+####################### Train setting
+train_spec:
+  # resume: ${run_dir}/${exp_name}/epoch-last.pth
+  # resume: ${oc.env:HOME}/Programs/Experiments/Solvent/naive/epoch-212_psnr_enhance-57.2629.pth
+  epoch_max: 1000
+  batch_size: 16
+  num_workers: 8
+  epoch_val: 1
+  epoch_save: 100
+
+####################### Monitor setting
+monitor_spec:
+  loss: min
+  sr_loss: min
+  sdf_loss: min
+  compos_loss: min
+  # val: min
+  psnr_pred: max
+  psnr_enhance: max
+  
+####################### Test setting
+test_spec:
+  model_pth: "???"
+  # model_from: config # load from hisotry exp
+  batch_size: 1
+  num_workers: 1
+  eval_bsize: 30000
+  # visual_dir: visual_recs # generate result imgs
+
+
+defaults:
+  ####################### dataset setting
+  - datasets@dataset_spec: pyrenees
+
+  ####################### model setting
+  - models@model_spec: liif
+
+  ####################### optimizer setting
+  - optimizers@optimizer_spec: adam
+  ####################### lr schedule setting
+  - optimizers@lr_scheduler_spec: multi_step_lr-1000
+
+  - _self_
+
+  ####################### experiments debug
+  # - experiments: exp_debug
+  # - experiments: exp_test
+  # - experiments: exp_metasr-sdf
+  # - experiments: exp_test128
+
+####################### hydra setting
+hydra:
+  output_subdir: hydra_configs
+  run:
+    # dir: ${run_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: ${run_dir}/${exp_name}/${run_spec.runner.type}
+  sweep:
+    # dir: ${run_dir}/${now:%Y-%m-%d}/multi_${now:%H-%M-%S}
+    dir: ${run_dir}/multi-${exp_name}
+    subdir: ${hydra.job.override_dirname}/${run_spec.runner.type}
+
+  job:
+    chdir: true

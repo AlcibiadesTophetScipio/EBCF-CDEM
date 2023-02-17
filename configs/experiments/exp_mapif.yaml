@@ -1,0 +1,18 @@
+# @package _global_
+
+defaults:
+  - override /models@model_spec: mapif
+  # - override /datasets@dataset_spec: astgtmv003
+
+exp_name: exp_mapif
+# exp_name: astgtmv003_mapif-local
+
+model_spec:
+  make_coord_local: true
+
+run_spec:
+  runner:
+    type: runner.train.v1
+
+monitor_spec:
+  psnr: max

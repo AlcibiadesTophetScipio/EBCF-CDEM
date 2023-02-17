@@ -1,0 +1,2 @@
+type: torch.optim.Adam
+lr: 1.e-4
