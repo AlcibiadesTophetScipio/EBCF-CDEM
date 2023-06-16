@@ -8,12 +8,11 @@ dataset_spec:
   cache: in_memory
 
 exp_name: ${dataset_spec.name}_${model_spec.encoder.name}-metasr
-device: "cuda:1"
+device: "cuda:0"
 
 run_spec:
   runner:
     type: runner.train.v1
 
-# change the model structure
-model_spec:
-  sdfnet: # set sdfnet as None
+monitor_spec:
+  loss: min

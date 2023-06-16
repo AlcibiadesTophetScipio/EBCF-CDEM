@@ -1,11 +1,11 @@
 # @package _global_
 
 defaults:
-  - override /models@model_spec: liif
-  # - override /datasets@dataset_spec: astgtmv003
+  - override /models@model_spec: ebcf
+  - override /datasets@dataset_spec: tfasr_30to10
 
 exp_name: exp_debug
-device: "cuda:0"
+device: "cuda:1"
 
 run_spec:
   runner:
@@ -23,21 +23,28 @@ run_spec:
 train_spec:
   batch_size: 16
 
-# change the model structure
-model_spec:
-  sdfnet:
-#   type: models.nif.MAPIF_ENHANCE
-#   encoder:
-#     # type: models.edsr.make_edsr
-#     input_dim: 2
-
 # dataset_spec:
-#   train_dataset:
-#     dataset:
-#       transM: dem2multi
-#   val_dataset:
-#     dataset:
-#       transM: dem2multi
-#   test_dataset:
-#     dataset:
-#       transM: dem2multi
+#   cache: in_memory
+  # train_dataset:
+  #   scale_max: # since it just can train with a specify scale
+  #   sample_q: # notice
+
+# change the model structure
+# model_spec:
+#   interp_mode: nearest
+#   loss_method: compos
+
+# model_spec:
+#   upsample_factor: 3
+
+model_spec:
+  make_coord_local: true
+  interp_mode: nearest
+  posEmbeder:
+    spec:
+      type: models.harmonic_embedding.HarmonicEmbedding
+      n_harmonic_functions: 16
+
+monitor_spec:
+  psnr: max
+  sdf_loss: min

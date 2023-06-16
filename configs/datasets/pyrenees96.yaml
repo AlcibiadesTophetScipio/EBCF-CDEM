@@ -1,0 +1,28 @@
+name: pyrenees96
+cache: none # in_memory
+root_path: YOUR_DATADIR_PATH/
+split_file: YOUR_SPLITE_FILE_PATH/pyrenees_r96.json
+
+train_dataset:
+  type: datasets.wrappers.SDFImplicitDownsampled
+  inp_size: 12
+  scale_max: 8
+  sample_q: 144
+  dataset:
+    type: datasets.dem_folder.DEMFolder
+    root_path: ${dataset_spec.root_path}
+    split_file: ${dataset_spec.split_file}
+    split_key: train
+    transM: dem2one
+    repeat: 1
+    cache: ${dataset_spec.cache}
+
+test_dataset:
+  type: datasets.wrappers.SDFImplicitDownsampled
+  scale_min: 4
+  dataset:
+    type: datasets.dem_folder.DEMFolder
+    root_path: ${dataset_spec.root_path}
+    split_file: ${dataset_spec.split_file}
+    split_key: test
+    transM: dem2one

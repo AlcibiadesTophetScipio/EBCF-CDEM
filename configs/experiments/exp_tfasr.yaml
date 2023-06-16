@@ -1,0 +1,26 @@
+# @package _global_
+
+defaults:
+  - override /models@model_spec: tfasr_model
+  # - override /optimizers@lr_scheduler_spec: multi_step_lr-300
+  - override /datasets@dataset_spec: tfasr
+
+exp_name: ${dataset_spec.name}_tfasr_dx${dataset_spec.train_dataset.scale_min}
+
+device: "cuda:0"
+
+dataset_spec:
+  cache: in_memory
+  train_dataset:
+    scale_max: # since it just can train with a specify scale
+    scale_min: 4
+    sample_q: # notice
+
+model_spec:
+  upsample_factor: ${dataset_spec.train_dataset.scale_min}
+
+run_spec:
+  runner:
+    type: runner.train.v1
+
+

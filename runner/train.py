@@ -39,15 +39,6 @@ def prepare_training(config, device):
         )
         optimizer.load_state_dict(optimizer_sd)
 
-        # No need to load lr scheduler
-        # lr_scheduler_spec = sv_file['scheduler']
-        # lr_scheduler_sd = lr_scheduler_spec.pop('sd')
-        # lr_scheduler = utils.object_from_dict(
-        #     lr_scheduler_spec,
-        #     optimizer=optimizer
-        # )
-        # lr_scheduler.load_state_dict(lr_scheduler_sd)
-
         epoch_start = sv_file['epoch'] + 1
         if config.get('lr_scheduler_spec') is None:
             lr_scheduler = None
@@ -57,13 +48,7 @@ def prepare_training(config, device):
                 optimizer=optimizer,
                 last_epoch=sv_file['epoch']-1
             )
-        # Don't do this
-        # for _ in range(epoch_start - 1):
-        #     lr_scheduler.step()
-        # for i in range(epoch_start,1001):
-        #     lr_scheduler.step()
-        #     log.info(f"Current learning rate is {optimizer.param_groups[0]['lr']}-({i})")
-
+        
         log.info(f"Current learning rate is {optimizer.param_groups[0]['lr']}")
     else:
         model = utils.object_from_dict(
@@ -98,7 +83,10 @@ def v1(
 ):
     ############ Preparing
     train_loader = make_data_loader(config=cfg, tag='train_dataset')
-    val_loader = make_data_loader(config=cfg, tag='val_dataset')
+    if cfg.dataset_spec.get('val_dataset'):
+        val_loader = make_data_loader(config=cfg, tag='val_dataset')
+    else:
+        val_loader = None
     
     model, optimizer, epoch_start, lr_scheduler = prepare_training(
         config=cfg,
@@ -154,7 +142,7 @@ def v1(
                     batch_idx=batch_idx,
                 )
             else:
-                loss = model(batch, batch_idx, flag='train')
+                loss = model(batch, batch_idx, flag='train',epoch=epoch)
                 for k,v in loss.items():
                     if len(v.shape)>0:
                         loss[k]=loss[k].mean()
@@ -218,7 +206,7 @@ def v1(
 
 
         ############  Validating procedure
-        if (epoch_val is not None) and (epoch % epoch_val == 0):
+        if (val_loader is not None) and (epoch_val is not None) and (epoch % epoch_val == 0):
             valres_dict = defaultdict(list)
             pbar = tqdm(val_loader, leave=False, desc='val')
             for batch, batch_idx in pbar:

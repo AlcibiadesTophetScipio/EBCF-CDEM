@@ -1,0 +1,35 @@
+# @package _global_
+
+defaults:
+  - override /datasets@dataset_spec: tfasr_30to10
+
+run_dir: ${oc.env:HOME}/Programs/Experiments/EBCF-CDEM
+exp_name: exp_interpolator-tif
+device: "cpu"
+
+run_spec:
+  runner:
+    type: runner.test.v1
+
+test_spec:
+  model_pth: interpolator
+  visual_dir: ${dataset_spec.name}-${model_spec.interpolation}-x${dataset_spec.test_dataset.scale_min}
+
+model_spec:
+  type: models.interpolator.InterPolator_Tfasr30to10
+  interpolation: identity
+
+dataset_spec:
+  test_dataset:
+    scale_min: 1
+
+optimizer_spec:
+lr_scheduler_spec:
+train_spec:
+monitor_spec:
+
+hydra:
+  output_subdir: null
+  sweep:
+    dir: ${run_dir}/multi-${exp_name}
+    subdir: ${dataset_spec.name}-${model_spec.interpolation}-x${dataset_spec.test_dataset.scale_min}/${run_spec.runner.type}

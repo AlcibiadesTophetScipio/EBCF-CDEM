@@ -4,27 +4,21 @@ import torch.nn.functional as F
 import math
 from torchvision import transforms
 
-import utils
+from utils import data2tif
+from datasets import utils
 from .meta_cls import DemRec_IF
+
 
 class InterPolator(nn.Module, DemRec_IF):
     def __init__(self, interpolation='bicubic'):
         super().__init__()
 
-        if interpolation == 'bicubic':
-            self.interpolation = transforms.InterpolationMode.BICUBIC
-        elif interpolation == 'bilinear':
-            self.interpolation = transforms.InterpolationMode.BILINEAR
-        elif interpolation == 'identity':
-            self.interpolation = 'identity'
-        else:
-            raise Exception('Please align interpolation method')
+        self.interpolation = interpolation
 
     def forward(self, target_shape, lr):
-        # sr = transforms.Resize(hr.shape[-2:], self.interpolation)(lr)
         if self.interpolation == 'identity':
             return lr
-        sr = transforms.Resize(target_shape, self.interpolation)(lr)
+        sr = utils.resize_fn(lr, target_shape, self.interpolation)
         return sr
 
     def test_step(
@@ -40,9 +34,6 @@ class InterPolator(nn.Module, DemRec_IF):
         # reshape for evaluating
         ih, iw = batch['inp'].shape[-2:]
         s = math.sqrt(batch['coord'].shape[1] / (ih * iw))
-        # shape = [batch['inp'].shape[0], round(ih * s), round(iw * s), batch['gt'].shape[-1]]
-        # gt_elev = batch['gt'].view(*shape) \
-        #         .permute(0, 3, 1, 2).contiguous()
 
         # get interpolation results
         sr = self.forward(
@@ -100,4 +91,21 @@ class InterPolator(nn.Module, DemRec_IF):
         #     'mse': diff.pow(2).mean()
         # }
 
-        
+class InterPolator_Tfasr30to10(InterPolator):
+    def __init__(self, interpolation, **kwargs):
+        super().__init__(interpolation)
+
+    def test_step(
+        self,
+        batch,
+        batch_idx,
+        eval_bsize=None,
+        save_dir=None,
+        **kwargs
+    ):
+        ih, iw = batch['inp'].shape[-2:]
+        scale = math.sqrt(batch['coord'].shape[1] / (ih * iw))
+        hr_shape = [round(ih * scale), round(iw * scale)]
+        hr_gt_dem = batch['gt'].reshape(hr_shape)
+
+        data2tif(hr_gt_dem, save_dir+'/{}_inp.tif'.format(batch_idx.item()))

@@ -1,7 +1,7 @@
 
 ####################### Env setting
 exp_name: temp
-run_dir: ${oc.env:HOME}/Programs/Experiments/Solvent
+run_dir: ${oc.env:HOME}/Programs/Experiments/EBCF-CDEM
 device: "cuda:0"
 # ensure_path: true
 
@@ -23,21 +23,21 @@ run_spec:
 train_spec:
   # resume: ${run_dir}/${exp_name}/epoch-last.pth
   # resume: ${oc.env:HOME}/Programs/Experiments/Solvent/naive/epoch-212_psnr_enhance-57.2629.pth
-  epoch_max: 1000
+  epoch_max: 300
   batch_size: 16
   num_workers: 8
-  epoch_val: 1
-  epoch_save: 100
+  epoch_val: 10
+  epoch_save: 30
 
 ####################### Monitor setting
 monitor_spec:
   loss: min
   sr_loss: min
-  sdf_loss: min
-  compos_loss: min
+  # sdf_loss: min
+  # compos_loss: min
   # val: min
-  psnr_pred: max
-  psnr_enhance: max
+  # psnr_pred: max
+  # psnr_enhance: max
   
 ####################### Test setting
 test_spec:
@@ -59,15 +59,19 @@ defaults:
   ####################### optimizer setting
   - optimizers@optimizer_spec: adam
   ####################### lr schedule setting
-  - optimizers@lr_scheduler_spec: multi_step_lr-1000
+  - optimizers@lr_scheduler_spec: multi_step_lr-300
 
   - _self_
 
   ####################### experiments debug
-  # - experiments: exp_debug
+  - experiments: exp_debug
   # - experiments: exp_test
   # - experiments: exp_metasr-sdf
   # - experiments: exp_test128
+  # - experiments: exp_interpolation
+  # - experiments: exp_tfasr
+  # - experiments: exp_test-origin_tfasr
+  # - experiments: exp_ebcf-pe
 
 ####################### hydra setting
 hydra:

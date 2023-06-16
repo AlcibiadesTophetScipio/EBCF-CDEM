@@ -61,6 +61,8 @@ class DEMFolder(Dataset):
             dem_data = dem_data
         elif self.transM == 'dem2one':
             dem_data, add_args = dem2one(dem_data=dem_data)
+        elif self.transM == 'dem2one_tfasr':
+            dem_data, add_args = dem2one(dem_data=dem_data, epsilon=10.0)
         elif self.transM == 'dem2multi':
             dem_data, add_args = dem2one(dem_data=dem_data)
             add_channels = dem2multi(dem_data=dem_data)
@@ -86,3 +88,18 @@ class DEMFolder(Dataset):
             'add_args': torch.tensor(add_args, dtype=torch.float32),
         }
 
+class PairedDEMFolders(Dataset):
+
+    def __init__(self, root_path, split_file_lr, split_file_hr, split_key, **kwargs):
+        if split_key == 'train':
+            self.dataset_lr = DEMFolder(root_path, split_file=split_file_lr, split_key=split_key, transM='dem2one_tfasr', **kwargs)
+            self.dataset_hr = DEMFolder(root_path, split_file=split_file_hr, split_key=split_key, transM='origin', **kwargs)
+        elif split_key == 'test':
+            self.dataset_lr = DEMFolder(root_path, split_file=split_file_lr, split_key=split_key, transM='dem2one_tfasr', **kwargs)
+            self.dataset_hr = DEMFolder(root_path, split_file=split_file_hr, split_key=split_key, transM='origin', **kwargs)
+
+    def __len__(self):
+        return len(self.dataset_lr)
+
+    def __getitem__(self, idx):
+        return self.dataset_lr[idx], self.dataset_hr[idx]

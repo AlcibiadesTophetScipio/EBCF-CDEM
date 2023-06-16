@@ -1,0 +1,29 @@
+name: tfasr
+cache: none # in_memory
+
+root_path: YOUR_DATADIR_PATH/TFASR/(60mor120m)to30m/
+split_file: YOUR_SPLITE_FILE_PATH/TFASR.json
+
+train_dataset:
+  type: datasets.wrappers.SDFImplicitDownsampled
+  inp_size: 16
+  scale_max: 4
+  sample_q: 256
+  dataset:
+    type: datasets.dem_folder.DEMFolder
+    root_path: ${dataset_spec.root_path}
+    split_file: ${dataset_spec.split_file}
+    split_key: train
+    transM: dem2one
+    repeat: 1
+    cache: ${dataset_spec.cache}
+
+test_dataset:
+  type: datasets.wrappers.SDFImplicitDownsampled
+  scale_min: 4
+  dataset:
+    type: datasets.dem_folder.DEMFolder
+    root_path: ${dataset_spec.root_path}
+    split_file: ${dataset_spec.split_file}
+    split_key: test
+    transM: dem2one

@@ -31,5 +31,14 @@ def to_pixel_samples(img):
     img_value = img.view(c, -1).permute(1, 0)
     return coord, img_value
 
-def resize_fn(img, size):
-    return transforms.Resize(size, transforms.InterpolationMode.BICUBIC)(img)
+def resize_fn(img, size, method='nearest'):
+    if method == 'bicubic':
+        interpolation = transforms.InterpolationMode.BICUBIC
+    elif method == 'bilinear':
+        interpolation = transforms.InterpolationMode.BILINEAR
+    elif method == 'nearest':
+        interpolation = transforms.InterpolationMode.NEAREST
+    else:
+        raise Exception('Please align interpolation method')
+    
+    return transforms.Resize(size, interpolation)(img)

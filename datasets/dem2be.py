@@ -3,7 +3,7 @@ import imageio
 
 def demfile_io(dem_file: str):
     file_suffix = dem_file.split('.')[-1]
-    if file_suffix == 'tif':
+    if file_suffix in ['tif', 'TIF']:
         dem_data = imageio.imread(dem_file)
     elif file_suffix == 'dem':
         dem_data = np.loadtxt(dem_file, dtype=np.float32, delimiter=',')

@@ -1,0 +1,52 @@
+# @package _global_
+
+defaults:
+  - override /models@model_spec: tfasr_model
+  # - override /datasets@dataset_spec: astgtmv003
+  # - override /datasets@dataset_spec: tyrol
+  - override /datasets@dataset_spec: tfasr
+
+dataset_spec:
+  test_dataset:
+    scale_min: 4
+    # dataset:
+    #   transM: origin
+
+model_spec:
+  upsample_factor: ${dataset_spec.test_dataset.scale_min}
+  # paper_test: True # it needs to set transM with origin
+
+run_dir: ${oc.env:HOME}/Programs/Experiments/EBCF-CDEM/rec-tifs
+exp_name: original_tfasrx${model_spec.upsample_factor}
+device: "cuda:0"
+
+run_spec:
+  runner:
+    type: runner.test.v1
+
+test_spec:
+  model_from: "config"
+  # Train on Pyrenees Dataset
+  
+  # Train on Astgtmv003 Dataset
+  
+  # Train on Tfasr Dataset
+  model_pth: "/home/syao/Codes/ebcf-cdem/paper_pth/tfasr_099.pth"
+
+  # visual_dir: visual_recs
+  visual_dir: ${dataset_spec.name}-x${dataset_spec.test_dataset.scale_min}
+  eval_bsize:
+
+
+# model_spec:
+optimizer_spec:
+lr_scheduler_spec:
+train_spec:
+monitor_spec:
+
+hydra:
+  output_subdir: null
+  sweep:
+    # dir: ${run_dir}/${now:%Y-%m-%d}/multi_${now:%H-%M-%S}
+    dir: ${run_dir}/multi-${exp_name}
+    subdir: ${dataset_spec.name}-x${dataset_spec.test_dataset.scale_min}/${run_spec.runner.type}

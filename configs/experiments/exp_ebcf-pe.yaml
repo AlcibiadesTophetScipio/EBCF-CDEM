@@ -1,0 +1,29 @@
+# @package _global_
+
+defaults:
+  - override /models@model_spec: ebcf
+  - override /optimizers@lr_scheduler_spec: multi_step_lr-300
+  - override /datasets@dataset_spec: tfasr
+
+exp_name: ${dataset_spec.name}_${model_spec.encoder.name}-ebcf-${model_spec.interp_mode}-pe${model_spec.posEmbeder.spec.n_harmonic_functions}
+
+device: "cuda:0"
+
+dataset_spec:
+  cache: in_memory
+
+model_spec:
+  make_coord_local: true
+  interp_mode: nearest
+  posEmbeder:
+    spec:
+      type: models.harmonic_embedding.HarmonicEmbedding
+      n_harmonic_functions: 16
+
+run_spec:
+  runner:
+    type: runner.train.v1
+
+monitor_spec:
+  psnr: max
+  bias_loss: min

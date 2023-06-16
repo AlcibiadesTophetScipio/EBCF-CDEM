@@ -9,6 +9,7 @@ import os
 ###### custome package
 import utils
 from .utils import make_data_loader
+from .pytorch_helper import model_state_dict_convert_auto
 
 log = logging.getLogger(__name__)
 
@@ -23,32 +24,42 @@ def prepare_test(config, device):
         ).to(device)
         return model, 0
     else:
-        sv_file = torch.load(model_pth)
         log.info(f"Loding file is {model_pth}")
-        log.info(f"Load history from {sv_file['epoch']}")
-
-        model_spec = sv_file['model']
-        model_sd = model_spec.pop('sd')
-
         model_from = config.test_spec.get('model_from', 'load_file')
         if model_from == "load_file":
-            model = utils.object_from_dict(model_spec).to(device)
-        else:
+            sv_file = torch.load(model_pth)
+            epoch = sv_file['epoch']
+            log.info(f"Load history from {sv_file['epoch']}")
+            model_spec = sv_file['model']
+            model_state = model_spec.pop('sd')
+            model = utils.object_from_dict(model_spec)
+        elif model_from == 'config':
             model = utils.object_from_dict(
                 OmegaConf.to_container(config.model_spec, resolve=True),
-                sdfnet_from='from_old'
-            ).to(device)
-            model_sd_new = {}
-            for k, v in model_sd.items():
-                if k.find('imnet') != -1:
-                    k = k.replace('imnet', 'srnet')
-
-                model_sd_new[k] = v
-            model_sd = model_sd_new
+            )
+            model_state = torch.load(model_pth, map_location='cpu')
+            epoch=0
         
-        model.load_state_dict(model_sd)
+        model.load_state_dict(model_state_dict_convert_auto(model_state, os.environ["CUDA_VISIBLE_DEVICES"]))
+        model.to(device)
 
-    return model, sv_file['epoch']
+        
+        # else:
+        #     model = utils.object_from_dict(
+        #         OmegaConf.to_container(config.model_spec, resolve=True),
+        #         sdfnet_from='from_old'
+        #     ).to(device)
+        #     model_sd_new = {}
+        #     for k, v in model_sd.items():
+        #         if k.find('imnet') != -1:
+        #             k = k.replace('imnet', 'srnet')
+
+        #         model_sd_new[k] = v
+        #     model_sd = model_sd_new
+        
+        # model.load_state_dict(model_sd)
+
+    return model, epoch
 
 def v1(
     cfg,

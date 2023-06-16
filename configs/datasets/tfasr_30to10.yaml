@@ -1,0 +1,28 @@
+name: tfasr30to10
+cache: none # in_memory
+
+root_path: YOUR_DATADIR_PATH/TFASR/30mto10m/
+split_file_hr: YOUR_SPLITE_FILE_PATH/TFASR_HR.json
+split_file_lr: YOUR_SPLITE_FILE_PATH/TFASR_LR.json
+
+train_dataset:
+  type: datasets.wrappers.DEMimplicitPaired
+  inp_size: 21
+  renormalize: True
+  dataset:
+    type: datasets.dem_folder.PairedDEMFolders
+    root_path: ${dataset_spec.root_path}
+    split_file_hr: ${dataset_spec.split_file_hr}
+    split_file_lr: ${dataset_spec.split_file_lr}
+    split_key: train
+    repeat: 1
+    cache: ${dataset_spec.cache}
+
+test_dataset:
+  type: datasets.wrappers.DEMimplicitPaired
+  dataset:
+    type: datasets.dem_folder.PairedDEMFolders
+    root_path: ${dataset_spec.root_path}
+    split_file_hr: ${dataset_spec.split_file_hr}
+    split_file_lr: ${dataset_spec.split_file_lr}
+    split_key: test

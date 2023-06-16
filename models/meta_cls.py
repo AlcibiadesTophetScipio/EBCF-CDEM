@@ -1,11 +1,11 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import math
 import torch
 import torch.nn.functional as F
 
 import utils
 
-class DemRec_IF():
+class DemRec_IF(ABC):
     @abstractmethod
     def forward(self):
         pass
@@ -32,6 +32,7 @@ class DemRec_IF():
         batch_idx: torch.Tensor,
         pred_elev: torch.Tensor,
         save_dir: str=None,
+        use_original_gt=False,
         )->dict:
 
         # reshape for evaluating
@@ -46,7 +47,10 @@ class DemRec_IF():
         # from (0,1) to real value
         dem_scale, dem_bias = batch['add_args'][...,0], batch['add_args'][...,1]
         rec = pred_elev*dem_scale + dem_bias
-        original =  gt_elev*dem_scale + dem_bias
+        if use_original_gt:
+            original = gt_elev
+        else:
+            original =  gt_elev*dem_scale + dem_bias
 
         # statistics
         scale=int(s)
@@ -76,13 +80,17 @@ class DemRec_IF():
             #     max_value=10.0
             # )
 
-            utils.data2tif(rec, save_dir+'/{}_rec-psnr_{:.4f}-mae_{:.4f}-mse_{:.4f}.tif'.format(
-                batch_idx.item(), psnr.item(),
-                    diff.abs().mean().item(),
-                    diff.pow(2).mean().item()
+            # if scale == 1:
+            if hasattr(self, 'interpolation') and self.interpolation == 'identity':
+                utils.data2tif(batch['inp']*dem_scale + dem_bias, save_dir+'/{}_inp.tif'.format(batch_idx.item()))
+            else:
+                utils.data2tif(rec, save_dir+'/{}_rec-psnr_{:.4f}-mae_{:.4f}-mse_{:.4f}.tif'.format(
+                    batch_idx.item(), psnr.item(),
+                        diff.abs().mean().item(),
+                        diff.pow(2).mean().item()
+                    )
                 )
-            )
-            # utils.data2tif(batch['inp']*dem_scale + dem_bias, save_dir+'/{}_inp.tif'.format(batch_idx.item()))
+            
             
             # utils.data2dem(
             #     torch.cat([rec, original], dim=-1),

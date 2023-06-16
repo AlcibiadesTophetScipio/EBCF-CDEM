@@ -7,6 +7,80 @@ from torch.utils.data import Dataset
 
 from .utils import to_pixel_samples, resize_fn
 
+
+class DEMimplicitPaired(Dataset):
+    def __init__(
+            self,
+            dataset,
+            inp_size=None,
+            sample_q=None,
+            renormalize=False,
+            **kwargs,
+    ):
+        self.dataset = dataset
+        self.inp_size = inp_size
+        self.sample_q = sample_q
+        self.renormalize = renormalize
+
+    def __len__(self):
+        return len(self.dataset)
+    
+    def __getitem__(self, idx):
+        dem_pkgs_lr, dem_pkgs_hr = self.dataset[idx]
+
+        dem_lr = dem_pkgs_lr['dem_data']
+        dem_lr_args = dem_pkgs_lr['add_args']
+        img_coord, img_value = to_pixel_samples(dem_lr.contiguous())
+        img_coord = img_coord.permute(1,0).view([-1, *(dem_lr.shape[1:])])
+
+        dem_hr = dem_pkgs_hr['dem_data']
+        dem_hr_args = dem_pkgs_hr['add_args']
+        if self.renormalize:
+            # normalize dem_hr to 0-1,
+            dem_scale, dem_bias = dem_lr_args[...,0], dem_lr_args[...,1]
+            dem_hr = (dem_hr - dem_bias)/dem_scale
+
+        s = dem_hr.shape[-2] // dem_lr.shape[-2] # assume int scale
+        if self.inp_size is None:
+            h_lr, w_lr = dem_lr.shape[-2:]
+            dem_hr = dem_hr[:, :h_lr * s, :w_lr * s]
+            crop_lr, crop_hr = dem_lr, dem_hr
+            global_coord = img_coord[:, :round(h_lr * s), :round(w_lr * s)]
+        else:
+            w_lr = self.inp_size
+            x0 = random.randint(0, dem_lr.shape[-2] - w_lr)
+            y0 = random.randint(0, dem_lr.shape[-1] - w_lr)
+            crop_lr = dem_lr[:, x0: x0 + w_lr, y0: y0 + w_lr]
+            w_hr = w_lr * s
+            x1 = x0 * s
+            y1 = y0 * s
+            crop_hr = dem_hr[:, x1: x1 + w_hr, y1: y1 + w_hr]
+
+            global_coord = img_coord[:, x0: x0 + w_hr, y0: y0 + w_hr]
+
+        global_coord = global_coord.reshape(2,-1).permute(1,0)
+        hr_coord, hr_value = to_pixel_samples(crop_hr.contiguous())
+
+        if self.sample_q is not None:
+            sample_lst = np.random.choice(
+                len(hr_coord), self.sample_q, replace=False)
+            hr_coord = hr_coord[sample_lst]
+            hr_value = hr_value[sample_lst]
+            global_coord = global_coord[sample_lst]
+
+        cell = torch.ones_like(hr_coord)
+        cell[:, 0] *= 2 / crop_hr.shape[-2]
+        cell[:, 1] *= 2 / crop_hr.shape[-1]
+
+        return {
+            'inp': crop_lr,
+            'gt': hr_value,
+            'coord': hr_coord,
+            'cell': cell,
+            'add_args': dem_lr_args,
+            'global_coord': global_coord,
+        }, idx
+
 class SDFImplicitDownsampled(Dataset):
     def __init__(self,
                  dataset,
@@ -85,3 +159,15 @@ class SDFImplicitDownsampled(Dataset):
             'add_args': add_args,
             'global_coord': global_coord,
         }, idx
+
+
+class DeltaDownsampled(SDFImplicitDownsampled):
+    def __init__(self,
+                 **kwargs,
+                 ) -> None:
+        super().__init__(**kwargs)
+
+    def __getitem__(self, idx):
+        dem_pkgs = self.dataset[idx]
+        img = dem_pkgs['dem_data']
+        add_args = dem_pkgs['add_args']

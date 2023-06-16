@@ -1,0 +1,3 @@
+type: models.tfasr_model.Generator
+n_residual_blocks: 16
+upsample_factor: 4

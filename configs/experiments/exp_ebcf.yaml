@@ -1,0 +1,25 @@
+# @package _global_
+
+defaults:
+  - override /models@model_spec: ebcf
+  - override /optimizers@lr_scheduler_spec: multi_step_lr-300
+  - override /datasets@dataset_spec: astgtmv003
+
+exp_name: ${dataset_spec.name}_${model_spec.encoder.name}-ebcf-${model_spec.interp_mode}
+
+device: "cuda:0"
+
+dataset_spec:
+  cache: in_memory
+
+model_spec:
+  make_coord_local: true
+  interp_mode: nearest
+
+run_spec:
+  runner:
+    type: runner.train.v1
+
+monitor_spec:
+  psnr: max
+  bias_loss: min

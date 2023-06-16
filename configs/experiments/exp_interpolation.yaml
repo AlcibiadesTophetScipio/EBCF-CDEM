@@ -3,12 +3,12 @@
 defaults:
   - override /models@model_spec: interpolator
   # - override /datasets@dataset_spec: astgtmv003
-  - override /datasets@dataset_spec: tyrol
+  # - override /datasets@dataset_spec: tyrol
+  - override /datasets@dataset_spec: tfasr
 
-run_dir: ${oc.env:HOME}/Programs/Experiments/Solvent
+# run_dir: ${oc.env:HOME}/Programs/Experiments/EBCF-CDEM
+run_dir: YOUR_EXPS_DIR_PATH
 exp_name: exp_interpolator-tif
-# exp_name: exp_interpolator-png
-# device: "cuda:0"
 device: "cpu"
 
 run_spec:
@@ -22,10 +22,11 @@ test_spec:
 model_spec:
   interpolation: bicubic
   # interpolation: bilinear
+  # interpolation: identity
 
 dataset_spec:
   test_dataset:
-    scale_min: 8
+    scale_min: 4
 
 optimizer_spec:
 lr_scheduler_spec:

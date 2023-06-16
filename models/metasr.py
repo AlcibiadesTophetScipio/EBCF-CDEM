@@ -14,13 +14,14 @@ class MetaSR(nn.Module, DemRec_IF):
         self,
         encoder,
         srnet,
-        sdfnet,
         data_sub=[0.5], data_div=[0.5],
-        loss_method = 'naive',
+        interp_mode=None,
+        loss_method=None,
     ):
         super().__init__()
         self.data_sub = torch.FloatTensor(data_sub)
         self.data_div = torch.FloatTensor(data_div)
+        self.interp_mode = interp_mode
         self.loss_method = loss_method
 
         self.encoder = encoder
@@ -29,23 +30,14 @@ class MetaSR(nn.Module, DemRec_IF):
             self.co_mat = self.encoder.args.n_colors
         else:
             self.co_mat = self.encoder.in_dim
+            
         self.srnet = utils.object_from_dict(
                 srnet['spec'],
                 in_dim=3,
                 out_dim=self.encoder.out_dim*9*self.co_mat
             )
-        
-        if sdfnet is None:
-            self.sdfnet = None
-        else:
-            sdfnet_in_dim = self.encoder.out_dim
-            sdfnet_in_dim += 3 # dem 3D coords
-            self.sdfnet = utils.object_from_dict(
-                sdfnet['spec'],
-                in_dim=sdfnet_in_dim
-            )
 
-    def query_elev(self, coord, cell):
+    def query_elev(self, origin_inp, coord, cell):
         feat = self.feat
         feat = F.unfold(feat, 3, padding=1).view(
             feat.shape[0], feat.shape[1] * 9, feat.shape[2], feat.shape[3])
@@ -85,172 +77,90 @@ class MetaSR(nn.Module, DemRec_IF):
         pred = self.srnet(inp.view(bs * q, -1)).view(bs * q, feat.shape[1], self.co_mat)
         pred = torch.bmm(q_feat.contiguous().view(bs * q, 1, -1), pred)
         pred = pred.view(bs, q, -1)
-        return pred
 
-    def query_sdf(
-            self,
-            sdf_coord,
-            query_elev,
-            liif_coord=None,
-            cell=None
-    ):
-        feat = self.feat.detach()
-        compos_coord = torch.cat([sdf_coord, query_elev], dim=-1)
-        
+        # get horiz line for preding bias
+        if self.interp_mode is not None:
+            grid_ = coord.clone()
+            horiz_line = F.grid_sample(
+                origin_inp, grid_.flip(-1).unsqueeze(1),
+                mode=self.interp_mode, align_corners=False
+            )[:, :, 0, :].permute(0, 2, 1)
 
-        coord_ = liif_coord.clone()
-        q_feat = F.grid_sample(
-            feat, coord_.flip(-1).unsqueeze(1),
-            mode='bicubic', align_corners=False)[:, :, 0, :].permute(0, 2, 1)
-        inp = torch.cat([q_feat, compos_coord], dim=-1)
-
-
-        bs, q = sdf_coord.shape[:2]
-        pred = self.sdfnet(inp.view(bs * q, -1)).view(bs, q, -1)
-
-        return pred
-
-    def forward(
-        self, 
-        inp, 
-        cell,
-        local_coord, 
-        global_coord,
-        ):
-
-        self.gen_feat(inp)
-        pred_elev = self.query_elev(local_coord, cell)
-
-        if self.sdfnet is None:
+            elev_value = horiz_line+pred
             return {
-                'pred_elev': pred_elev,
+                'pred_sdf': pred,
+                'pred_elev': elev_value,
+                'horiz_line': horiz_line,
             }
+        else:
+            return {'pred_elev': pred}
 
-        pred_sdf = self.query_sdf(
-            sdf_coord=global_coord,
-            query_elev=pred_elev,
-            liif_coord=local_coord,
-            cell=cell,
-        )
-        return {
-            'pred_elev': pred_elev,
-            'pred_sdf': pred_sdf,
-            }
-
-    def training_step(self, batch, **kwargs):
+    def forward(self, batch, batch_idx, flag, **kwargs):
         data_sub = self.data_sub.to(batch['inp'].device)
         data_div = self.data_div.to(batch['inp'].device)
-
         inp= (batch['inp'] - data_sub) / data_div
-        train_res = self.forward(
-            inp=inp,
-            cell=batch['cell'],
-            global_coord=batch['global_coord'],
-            local_coord=batch['coord']
+
+        self.gen_feat(inp)
+        preds = self.query_elev(
+            origin_inp=inp,
+            coord=batch['coord'],
+            cell=batch['cell']
         )
 
-        gt_elev = (batch['gt'] - data_sub) / data_div
-        sr_loss = F.l1_loss(train_res['pred_elev'], gt_elev)
-        if self.sdfnet is None:
+        if flag == 'train':
+            gt_elev = (batch['gt'] - data_sub) / data_div
+            return self.train_mod(preds=preds, gt_elev=gt_elev)
+        elif flag == 'val':
+            normal_pred = preds['pred_elev']*data_div + data_sub
+            normal_gt = batch['gt']
+            return self.val_mod(normal_pred, normal_gt)
+        elif flag == 'test':
+            normal_pred = preds['pred_elev']*data_div + data_sub
+            normal_pred.clamp_(0,1)
+
+            return self.recfunc(
+                batch=batch,
+                batch_idx=batch_idx,
+                pred_elev=normal_pred,
+                save_dir=kwargs['save_dir'],
+            )
+            
+        else:
+            raise Exception('Wrong flag in model.')
+
+    def train_mod(self, preds, gt_elev):
+        sr_loss = F.l1_loss(preds['pred_elev'], gt_elev)
+
+        if self.interp_mode is None:
             return {
                 'loss': sr_loss,
                 'sr_loss': sr_loss,
             }
+        else:
+            gt_bias = gt_elev - preds['horiz_line']
+            max_gt = gt_bias.max(dim=-2,keepdim=True)[0]
+            min_gt = gt_bias.min(dim=-2,keepdim=True)[0]
 
-        gt_sdf = train_res['pred_elev'] - gt_elev
-        sdf_loss = F.mse_loss(train_res['pred_sdf'], gt_sdf)
+            scale = 1/(max_gt-min_gt+1.0e-10)
+            re_bias = torch.where(scale>1000, gt_bias, ((gt_bias-min_gt)*scale - 0.5)*2.0)
+            re_pred = torch.where(scale>1000, preds['pred_sdf'], ((preds['pred_sdf']-min_gt)*scale- 0.5)*2.0)
+            # bias_loss = F.mse_loss(re_pred, re_bias)
+            bias_loss = F.l1_loss(re_pred, re_bias)
+            if self.loss_method is None:
+                loss = bias_loss
+            elif self.loss_method == 'compos':
+                loss = sr_loss+0.1*bias_loss
+            else:
+                raise("Wrong loss method.")
 
-        compos_loss = F.l1_loss(train_res['pred_elev']-train_res['pred_sdf'], gt_elev)
+            return {
+                'loss': loss,
+                'sr_loss': sr_loss,
+                'bias_loss': bias_loss,
+            }
 
-        if self.loss_method == 'naive':
-            loss = compos_loss
-        elif self.loss_method == 'compos':
-            loss = compos_loss + sr_loss
-        
+    def val_mod(self, normal_pred, normal_gt):
+        psnr = utils.calc_psnr(normal_pred, normal_gt)
         return {
-            'loss': loss,
-            'sr_loss': sr_loss,
-            'sdf_loss': sdf_loss,
-            'compos_loss': compos_loss,
+            'psnr': psnr
         }
-
-    def validation_step(self, batch, **kwargs):
-
-        data_sub = self.data_sub.to(batch['inp'].device)
-        data_div = self.data_div.to(batch['inp'].device)
-
-        inp= (batch['inp'] - data_sub) / data_div
-        model_output = self.forward(
-            inp=inp,
-            cell=batch['cell'],
-            global_coord=batch['global_coord'],
-            local_coord=batch['coord'],
-        )
-        pred_elev = model_output['pred_elev']
-
-        if self.sdfnet is None:
-            pred_elev = pred_elev*data_div + data_sub
-            psnr_pred = utils.calc_psnr(sr=pred_elev.clamp(0,1), hr=batch['gt'])
-            return {
-                'psnr_pred': psnr_pred,
-            }
-
-        else:
-            pred_sdf = model_output['pred_sdf']
-            enhance_elev = pred_elev-pred_sdf
-
-            # recover
-            pred_elev = pred_elev*data_div + data_sub
-            enhance_elev = enhance_elev*data_div + data_sub
-            enhance_elev.clamp_(0, 1)
-
-            psnr_pred = utils.calc_psnr(sr=pred_elev, hr=batch['gt'])
-            psnr_enhance = utils.calc_psnr(sr=enhance_elev, hr=batch['gt'])
-
-            return {
-                'psnr_pred': psnr_pred,
-                'psnr_enhance': psnr_enhance,
-            }
-
-    def test_step(
-        self,
-        batch,
-        batch_idx,
-        eval_bsize=None,
-        save_dir=None,
-        **kwargs
-    ):
-        data_sub = self.data_sub.to(batch['inp'].device)
-        data_div = self.data_div.to(batch['inp'].device)
-        inp= (batch['inp'] - data_sub) / data_div
-
-        model_output = self.forward(
-                inp=inp,
-                cell=batch['cell'],
-                global_coord=batch['global_coord'],
-                local_coord=batch['coord']
-            )
-
-        pred_elev = model_output['pred_elev']
-        if self.sdfnet is None:
-            pred_elev = pred_elev*data_div + data_sub
-            return self.recfunc(
-                batch=batch,
-                batch_idx=batch_idx,
-                pred_elev=pred_elev.clamp(0, 1),
-                save_dir=save_dir,
-            )
-        else:
-            pred_sdf = model_output['pred_sdf']
-            enhance_elev = pred_elev-pred_sdf
-
-            # from (-1,1) to (0,1)
-            enhance_elev = enhance_elev*data_div + data_sub
-            enhance_elev.clamp_(0,1)
-
-            return self.recfunc(
-                batch=batch,
-                batch_idx=batch_idx,
-                pred_elev=enhance_elev,
-                save_dir=save_dir,
-            )

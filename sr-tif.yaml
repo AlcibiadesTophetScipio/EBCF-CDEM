@@ -1,0 +1,15 @@
+
+# test_dataset: tyrol
+# test_dataset: pyrenees
+test_dataset: tfasr
+
+
+# scale: 2
+scale: 4
+# scale: 6
+# scale: 8
+
+gt_dir: YOUR_GT_DATA_DIR
+
+rec_dirs:
+  sr_dir: YOUR_SR_METHOD_RES_DIR

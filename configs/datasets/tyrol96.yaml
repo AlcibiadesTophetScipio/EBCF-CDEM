@@ -1,0 +1,14 @@
+name: tyrol96
+cache: none # in_memory
+root_path: YOUR_DATADIR_PATH/
+split_file: YOUR_SPLITE_FILE_PATH/tyrol_r96.json
+
+test_dataset:
+  type: datasets.wrappers.SDFImplicitDownsampled
+  scale_min: 4
+  dataset:
+    type: datasets.dem_folder.DEMFolder
+    root_path: ${dataset_spec.root_path}
+    split_file: ${dataset_spec.split_file}
+    split_key: test
+    transM: dem2one

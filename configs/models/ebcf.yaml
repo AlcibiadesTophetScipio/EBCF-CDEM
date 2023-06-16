@@ -1,0 +1,15 @@
+type: models.nif.EBCFF
+
+biasnet:
+  spec: # need this to stop utils.object parse
+    type: models.mlp.MLP
+    out_dim: 1
+    hidden_list: [256, 256, 256, 256]
+
+
+defaults:
+  - edsr_baseline@encoder
+  # - rdn@encoder
+  # - rcan@encoder
+  # - swinirC@encoder
+  # - imdn@encoder
