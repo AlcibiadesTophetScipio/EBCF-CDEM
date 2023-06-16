@@ -119,3 +119,12 @@ python hydra_run.py \
 ```
 
 #### On TFASR30to10 dataset
+
+```
+python hydra_run.py \
+        experiments=exp_ebcf-pe \
+        device='cuda:1' \
+        datasets@dataset_spec=tfasr_30to10 \
+        model_spec.interp_mode='nearest' \
+        model_spec.posEmbeder.spec.n_harmonic_functions=16
+```
