@@ -1,3 +1,4 @@
+main_dir: /home/syao/Programs/Experiments/EBCF-CDEM
 
 # test_dataset: tyrol
 # test_dataset: pyrenees
@@ -10,6 +11,9 @@ scale: 4
 # scale: 8
 
 gt_dir: YOUR_GT_DATA_DIR
+# gt_dir: ${main_dir}/multi-exp_interpolator-tif/${test_dataset}-identity-x1/*/*/
+
 
 rec_dirs:
   sr_dir: YOUR_SR_METHOD_RES_DIR
+  # sr_dir: ${main_dir}/rec-tifs/multi-${test_dataset}_edsrB-ebcf-nearest-pe16_best/${test_dataset}-x${scale}/*/*/

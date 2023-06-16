@@ -1,4 +1,4 @@
-name: pyrenees96
+name: pyrenees
 cache: none # in_memory
 root_path: YOUR_DATADIR_PATH/
 split_file: YOUR_SPLITE_FILE_PATH/pyrenees_r96.json

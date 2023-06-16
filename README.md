@@ -50,7 +50,7 @@ python hydra_run.py --multirun \
      datasets@dataset_spec=tfasr \
      dataset_spec.test_dataset.scale_min=2,4 \
      exp_name="tfasr_edsrB-ebcf-nearest-pe16_best" \
-     test_spec.model_pth="./checkpoints/TFASR30_ebcf-nearest-pe16_best-epoch.pth" \
+     test_spec.model_pth="${abs_pth}/checkpoints/TFASR30_ebcf-nearest-pe16_best-epoch.pth" \
      device='cuda:0'
 ```
 Similar to Pyrenees:
@@ -60,7 +60,7 @@ python hydra_run.py --multirun \
      datasets@dataset_spec=pyrenees \
      dataset_spec.test_dataset.scale_min=2,4,6,8 \
      exp_name="pyrenees_edsrB-ebcf-nearest-pe16_best" \
-     test_spec.model_pth="./checkpoints/Pyrenees_ebcf-nearest-pe16_best-epoch.pth" \
+     test_spec.model_pth="${abs_pth}/checkpoints/Pyrenees_ebcf-nearest-pe16_best-epoch.pth" \
      device='cuda:0'
 ```
 and TFASR30to10:
@@ -70,7 +70,7 @@ python hydra_run.py --multirun \
      datasets@dataset_spec=tfasr_30to10 \
      dataset_spec.test_dataset.scale_min=3 \
      exp_name="tfasr30to10_edsrB-ebcf-nearest-pe16_best" \
-     test_spec.model_pth="./checkpoints/TFASR30to10_ebcf-nearest-pe16_best-epoch.pth" \
+     test_spec.model_pth="${abs_pth}/checkpoints/TFASR30to10_ebcf-nearest-pe16_best-epoch.pth" \
      device='cuda:0'
 ```
 

@@ -1,7 +1,14 @@
 **/__pycache__/
 
+/temp*/
 
-/WBT
-temp.py
-.DS_Store
-/results
+/paper_pth/
+
+/results/
+
+/vis_*/
+
+/demo*/
+
+!.gitignore
+.*
