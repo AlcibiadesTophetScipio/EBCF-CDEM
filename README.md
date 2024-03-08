@@ -1,7 +1,23 @@
 # EBCF-CDEM
 
 ## Description
-A continuous DEM model.
+
+A continuous DEM model. Please refer to our paper ["A continuous digital elevation representation model for DEM super-resolution"](https://doi.org/10.1016/j.isprsjprs.2024.01.001) (in ISPRS Journal of Photogrammetry and Remote Sensing).
+
+### Citation
+
+If you find our work useful in your research, please cite:
+```
+@article{YAO20241,
+title = {A continuous digital elevation representation model for DEM super-resolution},
+journal = {ISPRS Journal of Photogrammetry and Remote Sensing},
+volume = {208},
+pages = {1-13},
+year = {2024},
+issn = {0924-2716},
+doi = {https://doi.org/10.1016/j.isprsjprs.2024.01.001}
+}
+```
 
 ## Installation
 ```
@@ -18,8 +34,8 @@ python hydra_run.py --cfg job --resolve ${config_file}
 
 ### I. Prepare Data
 1. Download the data:
-[TFASR30 and TFASR30to10 datasets](https://doi.org/10.6084/m9.figshare.19225374)
-[Pyrenees and Tyrol datasets](https://www.virvig.eu/fcn-terrains/terrains.zip)
+[TFASR30 and TFASR30to10 datasets](https://doi.org/10.6084/m9.figshare.19225374), 
+[Pyrenees and Tyrol datasets](https://www.virvig.eu/fcn-terrains/terrains.zip).
 
 2. Split Pyrenees and Tyrol datasets:
 ```
